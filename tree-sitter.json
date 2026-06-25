@@ -1,0 +1,7 @@
+{
+  "grammars": {
+    "asp-classic": {
+      "path": "."
+    }
+  }
+}
