@@ -1,7 +1,37 @@
 {
-  "grammars": {
-    "asp-classic": {
-      "path": "."
+  "grammars": [
+    {
+      "name": "asp_classic",
+      "camelcase": "AspClassic",
+      "scope": "source.asp-classic",
+      "path": ".",
+      "file-types": ["asp", "asa"],
+      "highlights": "queries/highlights.scm",
+      "injections": "queries/injections.scm",
+      "locals": "queries/locals.scm"
     }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "MIT",
+    "description": "Tree-sitter grammar for ASP Classic (VBScript)",
+    "authors": [
+      {
+        "name": "Hendry",
+        "email": "hendrymudarkt@example.com"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/hendrymudarkt/tree-sitter-asp-classic"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": false,
+    "node": true,
+    "python": false,
+    "rust": true,
+    "swift": false,
+    "zig": false
   }
 }

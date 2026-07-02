@@ -31,9 +31,6 @@
       "optional": true
     }
   },
-  "devDependencies": {
-    "tree-sitter-cli": "^0.21.0"
-  },
   "scripts": {
     "build": "tree-sitter generate && node-gyp build",
     "test": "tree-sitter test",
@@ -51,5 +48,11 @@
       "injections": "queries/injections.scm",
       "locals": "queries/locals.scm"
     }
-  ]
+  ],
+  "devDependencies": {
+    "tree-sitter-cli": "^0.26.10"
+  },
+  "allowScripts": {
+    "tree-sitter-cli@0.26.10": true
+  }
 }

@@ -1,65 +1,28 @@
 ; ASP Classic syntax highlighting queries
-; Compatible with Zed's highlight scope names
+; Grammar is token-oriented (not a full statement AST), so keywords,
+; built-in objects, and built-in functions are all distinguished from
+; plain identifiers via regex match here.
 
-; === ASP Tags ===
+; === ASP Delimiters ===
 (asp_directive) @tag
-(asp_expression 
-  "<%=" @tag.delimiter
-  "%>" @tag.delimiter)
-(asp_block
-  "<%" @tag.delimiter
-  "%>" @tag.delimiter)
+(asp_expression) @_asp_expr
+(asp_block) @_asp_block
 
-; === Keywords ===
-[
-  (dim_statement "Dim")
-  (set_statement "Set")
-  (if_statement "If" "Then" "Else" "ElseIf" "End" "If")
-  (for_statement "For" "To" "Step" "Next")
-  (for_each_statement "For" "Each" "In" "Next")
-  (while_statement "While" "Wend")
-  (do_loop_statement "Do" "Loop" "While" "Until")
-  (select_case_statement "Select" "Case" "End" "Select")
-  (case_clause "Case")
-  (sub_declaration "Sub" "End" "Sub")
-  (function_declaration "Function" "End" "Function")
-  (with_statement "With" "End" "With")
-  (exit_statement "Exit")
-  (on_error_statement "On" "Error")
-] @keyword
-
-; Case insensitive keywords via regex patterns
+; === VBScript Keywords ===
 ((identifier) @keyword
-  (#match? @keyword "^(?i)(dim|set|if|then|else|elseif|end|for|each|in|to|step|next|while|wend|do|loop|until|select|case|sub|function|with|exit|on|error|resume|goto|call|new|nothing|null|empty|true|false|not|and|or|xor|eqv|imp|mod|is|like|public|private|const|redim|preserve|byval|byref|optional|paramarray|class|property|get|let|typeof|execute|executeglobal|option|explicit|rem)$"))
+  (#match? @keyword "^(?i)(Dim|Set|If|Then|Else|ElseIf|End|For|Each|In|To|Step|Next|While|Wend|Do|Loop|Until|Select|Case|Sub|Function|With|Exit|On|Error|Resume|GoTo|Call|New|Public|Private|Const|ReDim|Preserve|ByVal|ByRef|Optional|ParamArray|Class|Property|Get|Let|TypeOf|Execute|ExecuteGlobal|Option|Explicit|Rem|Is|Like|Mod|Not|And|Or|Xor|Eqv|Imp)$"))
 
-; === Built-in Objects ===
-((identifier) @support.type
-  (#match? @support.type "^(?i)(Response|Request|Server|Session|Application|ObjectContext|ASPError)$"))
+; === ASP Built-in Objects ===
+((identifier) @type.builtin
+  (#match? @type.builtin "^(?i)(Response|Request|Server|Session|Application|ObjectContext|ASPError)$"))
 
-; === Built-in Object Methods/Properties (after dot) ===
-(member_expression
-  "." @punctuation.delimiter
-  (identifier) @support.function)
-
-; Response methods
-((identifier) @support.function
-  (#match? @support.function "^(?i)(Write|Redirect|End|Flush|Clear|AddHeader|AppendToLog|BinaryWrite|PICS|Status|ContentType|Expires|ExpiresAbsolute|Buffer|CacheControl|Charset|CodePage|LCID|IsClientConnected|CookieType)$"))
-
-; Request collections
-((identifier) @support.type
-  (#match? @support.type "^(?i)(Form|QueryString|Cookies|ServerVariables|Files|TotalBytes|BinaryRead)$"))
-
-; Server methods
-((identifier) @support.function
-  (#match? @support.function "^(?i)(CreateObject|Execute|GetLastError|HTMLEncode|MapPath|Transfer|URLEncode|URLPathEncode|ScriptTimeout|FSO)$"))
-
-; Session / Application methods
-((identifier) @support.function
-  (#match? @support.function "^(?i)(Abandon|Contents|StaticObjects|Timeout|SessionID|CodePage|LCID|Lock|Unlock|Remove|RemoveAll)$"))
+; === ASP Collections / Properties ===
+((identifier) @property
+  (#match? @property "^(?i)(Form|QueryString|Cookies|ServerVariables|Files|Contents|StaticObjects|Count|Item|Key)$"))
 
 ; === VBScript Built-in Functions ===
-((identifier) @support.function
-  (#match? @support.function "^(?i)(Abs|Array|Asc|Atn|CBool|CByte|CCur|CDate|CDbl|Chr|CInt|CLng|Cos|CreateObject|CSng|CStr|Date|DateAdd|DateDiff|DatePart|DateSerial|DateValue|Day|Erase|Exp|Filter|Fix|FormatCurrency|FormatDateTime|FormatNumber|FormatPercent|GetObject|Hex|Hour|InputBox|InStr|InStrRev|Int|IsArray|IsDate|IsEmpty|IsNull|IsNumeric|IsObject|Join|LBound|LCase|Left|Len|LoadPicture|Log|LTrim|Mid|Minute|Month|MonthName|MsgBox|Now|Oct|Replace|Right|Rnd|Round|RTrim|Second|Sgn|Sin|Space|Split|Sqr|StrComp|StrReverse|String|Tan|Time|Timer|TimeSerial|TimeValue|Trim|TypeName|UBound|UCase|VarType|Weekday|WeekdayName|Year|CVar|CVErr|Environ|EOF|Error|FileLen|FreeFile|GetAttr|Input|InputB|LOF|Open|Seek|SetAttr|Spc|Tab|Val|VarType)$"))
+((identifier) @function.builtin
+  (#match? @function.builtin "^(?i)(Abs|Array|Asc|Atn|CBool|CByte|CCur|CDate|CDbl|Chr|CInt|CLng|Cos|CreateObject|CSng|CStr|Date|DateAdd|DateDiff|DatePart|DateSerial|DateValue|Day|Erase|Exp|Filter|Fix|FormatCurrency|FormatDateTime|FormatNumber|FormatPercent|GetObject|Hex|Hour|InStr|InStrRev|Int|IsArray|IsDate|IsEmpty|IsNull|IsNumeric|IsObject|Join|LBound|LCase|Left|Len|Log|LTrim|Mid|Minute|Month|MonthName|Now|Oct|Replace|Right|Rnd|Round|RTrim|Second|Sgn|Sin|Space|Split|Sqr|StrComp|StrReverse|String|Tan|Time|Timer|TimeSerial|TimeValue|Trim|TypeName|UBound|UCase|VarType|Weekday|WeekdayName|Year|CVar|Val|Write|Redirect|MapPath|HTMLEncode|URLEncode)$"))
 
 ; === Strings ===
 (string) @string
@@ -67,33 +30,27 @@
 ; === Numbers ===
 (number) @number
 
-; === Boolean / Special literals ===
-(boolean_literal) @constant.builtin
-(null_literal) @constant.builtin
-(nothing_literal) @constant.builtin
-(empty_literal) @constant.builtin
+; === Boolean / Special literals (matched as identifiers) ===
+((identifier) @constant.builtin
+  (#match? @constant.builtin "^(?i)(True|False|Null|Nothing|Empty)$"))
 
 ; === Comments ===
 (comment) @comment
 
 ; === Operators ===
-[
-  "=" "<>" "<" ">" "<=" ">="
-  "+" "-" "*" "/" "\\" "^"
-  "&"
-] @operator
+(operator) @operator
 
 ; === Punctuation ===
-["(" ")"] @punctuation.bracket
-["," "."] @punctuation.delimiter
+(punctuation) @punctuation.delimiter
 
 ; === #include directive ===
 (include_directive
   "#include" @keyword.import
-  (string) @string.special.path)
+  (string) @string.special)
 
-; === Variables (identifiers) ===
+; === Plain identifiers (variables, function/sub names, everything else) ===
 (identifier) @variable
 
 ; === HTML content ===
 (html_content) @none
+(html_lt) @none
