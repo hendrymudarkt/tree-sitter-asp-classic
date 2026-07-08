@@ -28,6 +28,10 @@
           "named": true
         },
         {
+          "type": "keyword_modifier",
+          "named": true
+        },
+        {
           "type": "number",
           "named": true
         },
@@ -102,6 +106,10 @@
           "named": true
         },
         {
+          "type": "keyword_modifier",
+          "named": true
+        },
+        {
           "type": "number",
           "named": true
         },
@@ -169,6 +177,10 @@
         },
         {
           "type": "keyword",
+          "named": true
+        },
+        {
+          "type": "keyword_modifier",
           "named": true
         },
         {
@@ -340,6 +352,10 @@
   },
   {
     "type": "keyword",
+    "named": true
+  },
+  {
+    "type": "keyword_modifier",
     "named": true
   },
   {

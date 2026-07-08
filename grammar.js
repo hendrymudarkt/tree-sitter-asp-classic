@@ -99,6 +99,7 @@ module.exports = grammar({
         $.string,
         $.number,
         $.keyword,
+        $.keyword_modifier,
         $.function_builtin,
         $.type_builtin,
         $.property_builtin,
@@ -116,24 +117,35 @@ module.exports = grammar({
     number: ($) => token(choice(/\d+(\.\d+)?/, /&H[0-9A-Fa-f]+/, /&O[0-7]+/)),
 
     // === VBScript language keywords / control-flow / statements ===
+    // (Public/Private/Default live in `keyword_modifier` so they get a
+    // distinct highlight group, mirroring TextMate's storage.modifier.asp.)
     keyword: ($) =>
       token(
         prec(
           2,
-          /Dim|Set|If|Then|Else|ElseIf|End|For|Each|In|To|Step|Next|While|Wend|Do|Loop|Until|Select|Case|Sub|Function|With|Exit|On|Error|Resume|GoTo|Call|New|Public|Private|Default|Const|ReDim|Preserve|ByVal|ByRef|Optional|ParamArray|Class|Property|Get|Let|TypeOf|Execute|ExecuteGlobal|Option|Explicit|Is|Like|Mod|Not|And|Or|Xor|Eqv|Imp|Randomize/i,
+          /Dim|Set|If|Then|Else|ElseIf|End|For|Each|In|To|Step|Next|While|Wend|Do|Loop|Until|Select|Case|Sub|Function|With|Exit|On|Error|Resume|GoTo|Call|New|Const|ReDim|Preserve|ByVal|ByRef|Optional|ParamArray|Class|Property|Get|Let|TypeOf|Execute|ExecuteGlobal|Option|Explicit|Is|Like|Mod|Not|And|Or|Xor|Eqv|Imp|Randomize|Return|Continue/i,
         ),
       ),
 
-    // === VBScript built-in functions ===
+    // === VBScript storage modifiers (storage.modifier.asp) ===
+    keyword_modifier: ($) =>
+      token(prec(2, /Public|Private|Default/i)),
+
+    // === VBScript built-in functions + ASP object methods + events ===
+    // Mirrors TextMate scopes: support.function.vb.asp (VB functions),
+    // support.function.asp (object methods like Response.Write), and
+    // support.function.event.asp (Application_OnStart, etc.).
+    // NOTE: bare `End` is intentionally excluded — it is a keyword (End If,
+    // End Sub, ...) and must not be colored as a function.
     function_builtin: ($) =>
       token(
         prec(
           2,
-          /Abs|Array|Asc|Atn|CBool|CByte|CCur|CDate|CDbl|Chr|CInt|CLng|Cos|CreateObject|CSng|CStr|Date|DateAdd|DateDiff|DatePart|DateSerial|DateValue|Day|Erase|Exp|Filter|Fix|FormatCurrency|FormatDateTime|FormatNumber|FormatPercent|GetObject|Hex|Hour|IIf|InStrRev|InStr|Int|IsArray|IsDate|IsEmpty|IsNull|IsNumeric|IsObject|Join|LBound|LCase|Left|Len|Log|LTrim|Mid|Minute|Month|MonthName|Now|Oct|Replace|Right|Rnd|Round|RTrim|Second|Sgn|Sin|Space|Split|Sqr|StrComp|StrReverse|String|Tan|Time|Timer|TimeSerial|TimeValue|Trim|TypeName|UBound|UCase|VarType|Weekday|WeekdayName|Year|CVar|Val|Write|Redirect|MapPath|HTMLEncode|URLEncode/i,
+          /Abs|Array|Add|Asc|Atn|CBool|CByte|CCur|CDate|CDbl|Chr|CInt|CLng|Conversions|Cos|CreateObject|CSng|CStr|Date|DateAdd|DateDiff|DatePart|DateSerial|DateValue|Day|Derived|Math|Escape|Eval|Exists|Exp|Filter|Fix|FormatCurrency|FormatDateTime|FormatNumber|FormatPercent|GetLocale|GetObject|GetRef|Hex|Hour|IIf|InputBox|InStr|InStrRev|Int|IsArray|IsDate|IsEmpty|IsNull|IsNumeric|IsObject|Item|Items|Join|Keys|LBound|LCase|Left|Len|LoadPicture|Log|LTrim|RTrim|Trim|Maths|Mid|Minute|Month|MonthName|MsgBox|Now|Oct|Remove|RemoveAll|Replace|RGB|Right|Rnd|Round|ScriptEngine|ScriptEngineBuildVersion|ScriptEngineMajorVersion|ScriptEngineMinorVersion|Second|SetLocale|Sgn|Sin|Space|Split|Sqr|StrComp|String|StrReverse|Tan|Time|Timer|TimeSerial|TimeValue|TypeName|UBound|UCase|Unescape|VarType|Weekday|WeekdayName|Year|CVar|Val|Write|Redirect|MapPath|HTMLEncode|URLEncode|Lock|Unlock|SetAbort|SetComplete|AddHeader|AppendToLog|BinaryWrite|BinaryRead|Clear|Flush|Abandon|Application_OnEnd|Application_OnStart|OnTransactionAbort|OnTransactionCommit|Session_OnEnd|Session_OnStart|Class_Initialize|Class_Terminate/i,
         ),
       ),
 
-    // === ASP built-in intrinsic objects ===
+    // === ASP built-in intrinsic objects (support.class.asp) ===
     type_builtin: ($) =>
       token(
         prec(
@@ -142,12 +154,13 @@ module.exports = grammar({
         ),
       ),
 
-    // === ASP collections / common object properties ===
+    // === ASP collections + object properties (support.class.collection.asp
+    // and support.constant.asp, e.g. Response.Buffer, Request.Form) ===
     property_builtin: ($) =>
       token(
         prec(
           2,
-          /Form|QueryString|Cookies|ServerVariables|Files|Contents|StaticObjects|Count|Item|Key/i,
+          /Form|QueryString|Cookies|ServerVariables|Files|Contents|StaticObjects|Count|Item|Key|ClientCertificate|TotalBytes|Buffer|CacheControl|Charset|ContentType|Expires|ExpiresAbsolute|IsClientConnected|PICS|Status|ScriptTimeout|CodePage|LCID|SessionID|Timeout/i,
         ),
       ),
 
