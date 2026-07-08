@@ -28,6 +28,10 @@ module.exports = grammar({
   extras: ($) => [/\s/, $.comment],
 
   rules: {
+    // `html_close_tag` is a top-level sibling of `html`: `html` stops at any
+    // `</`, so orphaned closing tags become their own `html_close_tag` nodes
+    // (colored @tag) rather than raw text, while <style>/<script> closers stay
+    // inside `html` thanks to the higher-precedence token alternatives there.
     source_file: ($) =>
       repeat(
         choice(
@@ -36,6 +40,7 @@ module.exports = grammar({
           $.asp_block,
           $.server_script_block,
           $.include_directive,
+          $.html_close_tag,
           $.html,
         ),
       ),
@@ -64,12 +69,38 @@ module.exports = grammar({
     // elements live inside a single `html` node, HTML sees them as whole
     // elements and injects CSS and JavaScript into them itself — exactly the
     // behavior of VS Code's text.html.basic that the jtjoo extension builds
-    // on. We stop the run only at ASP delimiters (<%, <%=, <%@); every other
-    // `<` (including <!DOCTYPE, <!-- comments -->, <script>) stays inside
-    // `html`. The #include SSI directive is handled by its own rule below, so
+    // on. We stop the run at ASP delimiters (<%, <%=, <%@) and at any `</`
+    // (closing tag) so orphaned closing tags (separated from their openers by
+    // <% %> blocks) are NOT swallowed as raw text but handed to the
+    // `html_close_tag` rule below and colored directly as @tag. `/<[^%@=\/]/`
+    // excludes `/` after `<`, so `</tag>` stops `html`. </style> and </script>
+    // are EXCEPTIONS — they are given token precedence 1 so the lexer prefers
+    // them over `html_close_tag` (which would otherwise capture them and
+    // break the <style>/<script> element needed for CSS/JS injection).
+    // The #include SSI directive is handled by its own rule below, so
     // it is deliberately excluded here and NOT treated as an HTML comment.
     html: ($) =>
-      prec(-1, repeat1(choice(/[^<]/, /<[^%=@]/))),
+      prec(-1, repeat1(choice(
+        /[^<]/,
+        // </style> and </script> are given token precedence 1 so the lexer
+        // prefers them over the catch-all `html_close_tag` rule below (which
+        // would otherwise capture them as a named node and break the
+        // <style>/<script> element needed for CSS/JS injection).
+        token(prec(1, /<\/style[^>]*>/i)),
+        token(prec(1, /<\/script[^>]*>/i)),
+        /<[^%@=\/]/,
+      ))),
+
+    // Closing HTML tag — captured as its OWN top-level node (a sibling of
+    // `html`, never a child) so orphaned closing tags (separated from their
+    // openers by <% %> blocks) are colored by our grammar as @tag. `html`
+    // deliberately stops at any `</` (see above), so these tags are never
+    // swallowed as raw text. `html_close_tag` does NOT match </script> or
+    // </style> because the higher-precedence token alternatives in `html`
+    // capture those first, keeping complete <style>/<script> elements whole
+    // for the HTML grammar's CSS/JS injections. `token()` keeps the node range
+    // tight (no absorbed leading whitespace).
+    html_close_tag: ($) => token(/<\/[a-zA-Z][^>]*>/i),
 
     // #include directive (SSI, written as an HTML comment).
     // Starts with /<!--#include/i (NOT the bare literal "<!--") so that

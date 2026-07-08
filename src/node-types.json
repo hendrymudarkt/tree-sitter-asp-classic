@@ -241,6 +241,10 @@
           "named": true
         },
         {
+          "type": "html_close_tag",
+          "named": true
+        },
+        {
           "type": "include_directive",
           "named": true
         },
@@ -286,6 +290,10 @@
   },
   {
     "type": "function_builtin",
+    "named": true
+  },
+  {
+    "type": "html_close_tag",
     "named": true
   },
   {

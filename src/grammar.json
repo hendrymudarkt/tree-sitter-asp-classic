@@ -29,6 +29,10 @@
           },
           {
             "type": "SYMBOL",
+            "name": "html_close_tag"
+          },
+          {
+            "type": "SYMBOL",
             "name": "html"
           }
         ]
@@ -146,11 +150,43 @@
               "value": "[^<]"
             },
             {
+              "type": "TOKEN",
+              "content": {
+                "type": "PREC",
+                "value": 1,
+                "content": {
+                  "type": "PATTERN",
+                  "value": "<\\/style[^>]*>",
+                  "flags": "i"
+                }
+              }
+            },
+            {
+              "type": "TOKEN",
+              "content": {
+                "type": "PREC",
+                "value": 1,
+                "content": {
+                  "type": "PATTERN",
+                  "value": "<\\/script[^>]*>",
+                  "flags": "i"
+                }
+              }
+            },
+            {
               "type": "PATTERN",
-              "value": "<[^%=@]"
+              "value": "<[^%@=\\/]"
             }
           ]
         }
+      }
+    },
+    "html_close_tag": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "<\\/[a-zA-Z][^>]*>",
+        "flags": "i"
       }
     },
     "include_directive": {
