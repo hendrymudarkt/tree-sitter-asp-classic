@@ -12,7 +12,19 @@
           "named": true
         },
         {
+          "type": "constant_builtin",
+          "named": true
+        },
+        {
+          "type": "function_builtin",
+          "named": true
+        },
+        {
           "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "keyword",
           "named": true
         },
         {
@@ -24,11 +36,19 @@
           "named": true
         },
         {
+          "type": "property_builtin",
+          "named": true
+        },
+        {
           "type": "punctuation",
           "named": true
         },
         {
           "type": "string",
+          "named": true
+        },
+        {
+          "type": "type_builtin",
           "named": true
         }
       ]
@@ -66,7 +86,19 @@
           "named": true
         },
         {
+          "type": "constant_builtin",
+          "named": true
+        },
+        {
+          "type": "function_builtin",
+          "named": true
+        },
+        {
           "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "keyword",
           "named": true
         },
         {
@@ -78,11 +110,19 @@
           "named": true
         },
         {
+          "type": "property_builtin",
+          "named": true
+        },
+        {
           "type": "punctuation",
           "named": true
         },
         {
           "type": "string",
+          "named": true
+        },
+        {
+          "type": "type_builtin",
           "named": true
         }
       ]
@@ -116,7 +156,19 @@
           "named": true
         },
         {
+          "type": "constant_builtin",
+          "named": true
+        },
+        {
+          "type": "function_builtin",
+          "named": true
+        },
+        {
           "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "keyword",
           "named": true
         },
         {
@@ -128,11 +180,19 @@
           "named": true
         },
         {
+          "type": "property_builtin",
+          "named": true
+        },
+        {
           "type": "punctuation",
           "named": true
         },
         {
           "type": "string",
+          "named": true
+        },
+        {
+          "type": "type_builtin",
           "named": true
         }
       ]
@@ -216,6 +276,14 @@
     "extra": true
   },
   {
+    "type": "constant_builtin",
+    "named": true
+  },
+  {
+    "type": "function_builtin",
+    "named": true
+  },
+  {
     "type": "html_content",
     "named": true
   },
@@ -228,6 +296,10 @@
     "named": true
   },
   {
+    "type": "keyword",
+    "named": true
+  },
+  {
     "type": "number",
     "named": true
   },
@@ -236,11 +308,19 @@
     "named": true
   },
   {
+    "type": "property_builtin",
+    "named": true
+  },
+  {
     "type": "punctuation",
     "named": true
   },
   {
     "type": "string",
+    "named": true
+  },
+  {
+    "type": "type_builtin",
     "named": true
   }
 ]

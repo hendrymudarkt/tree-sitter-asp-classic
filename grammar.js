@@ -10,7 +10,12 @@
  *   - ASP delimiters: <% %>, <%= %>, <%@ %>, <script runat="server">
  *   - #include directives
  *   - Comments, strings, numbers
- *   - Keywords (via regex match on identifiers in highlights.scm)
+ *   - Keywords / builtin functions / builtin objects / builtin properties /
+ *     builtin constants as their OWN token types (not "identifier" +
+ *     regex filtering in highlights.scm). This mirrors how TextMate
+ *     grammars (e.g. the classic VS Code ASP extensions) work: keyword
+ *     patterns are tried and win BEFORE the generic identifier pattern,
+ *     so there's no query-ordering ambiguity in highlights.scm at all.
  *   - Everything else inside a code block as a stream of tokens/expressions
  *
  * This keeps the grammar conflict-free while still giving Zed enough
@@ -68,13 +73,22 @@ module.exports = grammar({
     // === Code tokens ===
     // A permissive stream of recognizable VBScript tokens. We don't attempt
     // to enforce statement grammar (If/Then/End If pairing, etc.) at the
-    // parse-tree level; that structure is instead conveyed through
-    // highlighting queries matching keyword identifiers.
+    // parse-tree level; that structure is instead conveyed by giving
+    // keywords/builtins their own token types below, matched with higher
+    // precedence than the generic `identifier` token. Tree-sitter's lexer
+    // uses longest-match-wins, and breaks ties by rule precedence, so e.g.
+    // the text "If" is lexed as `keyword` (not `identifier`) while "IfCount"
+    // still correctly lexes as a single, longer `identifier` token.
     _code_token: ($) =>
       choice(
         $.comment,
         $.string,
         $.number,
+        $.keyword,
+        $.function_builtin,
+        $.type_builtin,
+        $.property_builtin,
+        $.constant_builtin,
         $.identifier,
         $.operator,
         $.punctuation,
@@ -87,6 +101,51 @@ module.exports = grammar({
 
     number: ($) =>
       token(choice(/\d+(\.\d+)?/, /&H[0-9A-Fa-f]+/, /&O[0-7]+/)),
+
+    // === VBScript language keywords / control-flow / statements ===
+    keyword: ($) =>
+      token(
+        prec(
+          2,
+          /Dim|Set|If|Then|Else|ElseIf|End|For|Each|In|To|Step|Next|While|Wend|Do|Loop|Until|Select|Case|Sub|Function|With|Exit|On|Error|Resume|GoTo|Call|New|Public|Private|Default|Const|ReDim|Preserve|ByVal|ByRef|Optional|ParamArray|Class|Property|Get|Let|TypeOf|Execute|ExecuteGlobal|Option|Explicit|Is|Like|Mod|Not|And|Or|Xor|Eqv|Imp|Randomize/i,
+        ),
+      ),
+
+    // === VBScript built-in functions ===
+    function_builtin: ($) =>
+      token(
+        prec(
+          2,
+          /Abs|Array|Asc|Atn|CBool|CByte|CCur|CDate|CDbl|Chr|CInt|CLng|Cos|CreateObject|CSng|CStr|Date|DateAdd|DateDiff|DatePart|DateSerial|DateValue|Day|Erase|Exp|Filter|Fix|FormatCurrency|FormatDateTime|FormatNumber|FormatPercent|GetObject|Hex|Hour|IIf|InStrRev|InStr|Int|IsArray|IsDate|IsEmpty|IsNull|IsNumeric|IsObject|Join|LBound|LCase|Left|Len|Log|LTrim|Mid|Minute|Month|MonthName|Now|Oct|Replace|Right|Rnd|Round|RTrim|Second|Sgn|Sin|Space|Split|Sqr|StrComp|StrReverse|String|Tan|Time|Timer|TimeSerial|TimeValue|Trim|TypeName|UBound|UCase|VarType|Weekday|WeekdayName|Year|CVar|Val|Write|Redirect|MapPath|HTMLEncode|URLEncode/i,
+        ),
+      ),
+
+    // === ASP built-in intrinsic objects ===
+    type_builtin: ($) =>
+      token(
+        prec(2, /Response|Request|Server|Session|Application|ObjectContext|ASPError/i),
+      ),
+
+    // === ASP collections / common object properties ===
+    property_builtin: ($) =>
+      token(
+        prec(
+          2,
+          /Form|QueryString|Cookies|ServerVariables|Files|Contents|StaticObjects|Count|Item|Key/i,
+        ),
+      ),
+
+    // === Boolean / special literals / vbXxx runtime constants ===
+    constant_builtin: ($) =>
+      token(
+        prec(
+          2,
+          choice(
+            /True|False|Null|Nothing|Empty/i,
+            /vb[A-Z][a-zA-Z]*/,
+          ),
+        ),
+      ),
 
     identifier: ($) => token(/[a-zA-Z_][a-zA-Z0-9_]*/),
 

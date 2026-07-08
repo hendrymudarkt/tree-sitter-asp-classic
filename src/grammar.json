@@ -194,6 +194,26 @@
         },
         {
           "type": "SYMBOL",
+          "name": "keyword"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "function_builtin"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "type_builtin"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "property_builtin"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "constant_builtin"
+        },
+        {
+          "type": "SYMBOL",
           "name": "identifier"
         },
         {
@@ -279,6 +299,75 @@
             "value": "&O[0-7]+"
           }
         ]
+      }
+    },
+    "keyword": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "PATTERN",
+          "value": "Dim|Set|If|Then|Else|ElseIf|End|For|Each|In|To|Step|Next|While|Wend|Do|Loop|Until|Select|Case|Sub|Function|With|Exit|On|Error|Resume|GoTo|Call|New|Public|Private|Default|Const|ReDim|Preserve|ByVal|ByRef|Optional|ParamArray|Class|Property|Get|Let|TypeOf|Execute|ExecuteGlobal|Option|Explicit|Is|Like|Mod|Not|And|Or|Xor|Eqv|Imp|Randomize",
+          "flags": "i"
+        }
+      }
+    },
+    "function_builtin": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "PATTERN",
+          "value": "Abs|Array|Asc|Atn|CBool|CByte|CCur|CDate|CDbl|Chr|CInt|CLng|Cos|CreateObject|CSng|CStr|Date|DateAdd|DateDiff|DatePart|DateSerial|DateValue|Day|Erase|Exp|Filter|Fix|FormatCurrency|FormatDateTime|FormatNumber|FormatPercent|GetObject|Hex|Hour|IIf|InStrRev|InStr|Int|IsArray|IsDate|IsEmpty|IsNull|IsNumeric|IsObject|Join|LBound|LCase|Left|Len|Log|LTrim|Mid|Minute|Month|MonthName|Now|Oct|Replace|Right|Rnd|Round|RTrim|Second|Sgn|Sin|Space|Split|Sqr|StrComp|StrReverse|String|Tan|Time|Timer|TimeSerial|TimeValue|Trim|TypeName|UBound|UCase|VarType|Weekday|WeekdayName|Year|CVar|Val|Write|Redirect|MapPath|HTMLEncode|URLEncode",
+          "flags": "i"
+        }
+      }
+    },
+    "type_builtin": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "PATTERN",
+          "value": "Response|Request|Server|Session|Application|ObjectContext|ASPError",
+          "flags": "i"
+        }
+      }
+    },
+    "property_builtin": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "PATTERN",
+          "value": "Form|QueryString|Cookies|ServerVariables|Files|Contents|StaticObjects|Count|Item|Key",
+          "flags": "i"
+        }
+      }
+    },
+    "constant_builtin": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "PATTERN",
+              "value": "True|False|Null|Nothing|Empty",
+              "flags": "i"
+            },
+            {
+              "type": "PATTERN",
+              "value": "vb[A-Z][a-zA-Z]*"
+            }
+          ]
+        }
       }
     },
     "identifier": {
