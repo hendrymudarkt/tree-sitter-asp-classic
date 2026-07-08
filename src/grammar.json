@@ -157,12 +157,9 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "STRING",
-          "value": "<!--"
-        },
-        {
-          "type": "STRING",
-          "value": "#include"
+          "type": "PATTERN",
+          "value": "<!--#include",
+          "flags": "i"
         },
         {
           "type": "CHOICE",

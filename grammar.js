@@ -71,11 +71,14 @@ module.exports = grammar({
     html: ($) =>
       prec(-1, repeat1(choice(/[^<]/, /<[^%=@]/))),
 
-    // #include directive (HTML comment syntax)
+    // #include directive (SSI, written as an HTML comment).
+    // Starts with /<!--#include/i (NOT the bare literal "<!--") so that
+    // ordinary HTML comments `<!-- ... -->` are NOT lexed as the start of
+    // this rule. The bare `<!--` would otherwise win by longest-match over
+    // the `html` rule's `<!` token, breaking every HTML comment on the page.
     include_directive: ($) =>
       seq(
-        "<!--",
-        "#include",
+        /<!--#include/i,
         choice(/file/i, /virtual/i),
         "=",
         $.string,
