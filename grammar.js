@@ -36,11 +36,7 @@ module.exports = grammar({
           $.asp_block,
           $.server_script_block,
           $.include_directive,
-          $.doctype,
-          $.style_block,
-          $.html_tag,
-          $.html_content,
-          $.html_lt,
+          $.html,
         ),
       ),
 
@@ -62,16 +58,18 @@ module.exports = grammar({
         /<\/script>/i,
       ),
 
-    // <style>...</style> blocks. Captured as three pieces (open tag, raw
-    // CSS content, close tag) so injections.scm can re-parse just the
-    // middle piece as CSS, instead of it being swallowed as opaque
-    // html_content (which only gets re-parsed as HTML, not CSS).
-    style_block: ($) =>
-      seq(
-        alias(/<style[^>]*>/i, $.style_open_tag),
-        optional(alias(token(prec(1, /[^<]+/)), $.style_content)),
-        alias(/<\/style\s*>/i, $.style_close_tag),
-      ),
+    // Raw HTML — everything that is not an ASP construct. Captured as ONE
+    // node and re-parsed whole by Zed's bundled HTML grammar (see
+    // injections.scm). Because complete <style>…</style> and <script>…</script>
+    // elements live inside a single `html` node, HTML sees them as whole
+    // elements and injects CSS and JavaScript into them itself — exactly the
+    // behavior of VS Code's text.html.basic that the jtjoo extension builds
+    // on. We stop the run only at ASP delimiters (<%, <%=, <%@); every other
+    // `<` (including <!DOCTYPE, <!-- comments -->, <script>) stays inside
+    // `html`. The #include SSI directive is handled by its own rule below, so
+    // it is deliberately excluded here and NOT treated as an HTML comment.
+    html: ($) =>
+      prec(-1, repeat1(choice(/[^<]/, /<[^%=@]/))),
 
     // #include directive (HTML comment syntax)
     include_directive: ($) =>
@@ -193,36 +191,9 @@ module.exports = grammar({
 
     punctuation: ($) => token(choice("(", ")", ",", ".", ":")),
 
-    // <!DOCTYPE html> and similar declarations. Handled as its own rule
-    // (rather than being swept up by html_tag, which deliberately excludes
-    // '!' to avoid colliding with <!--#include--> / HTML comments).
-    doctype: ($) => token(prec(-1, seq(/<!doctype/i, /[^<>]*/, ">"))),
-
     // A whole HTML tag, e.g. `<div class="x">`, `</div>`, `<input ... />`.
-    // Captured as ONE node (not just the leading '<') so it can be handed
-    // off wholesale to Zed's bundled HTML grammar via injections.scm.
-    //
-    // The character class after '<' deliberately excludes '%' and '!' so
-    // this rule never competes with `<%`/`<%=`/`<%@` (asp_block /
-    // asp_expression / asp_directive) or `<!--` (include_directive, and
-    // plain HTML comments, which still fall through to html_content /
-    // html_lt below — a known limitation, not specifically re-parsed as
-    // HTML comments for now). Tree-sitter's lexer only breaks ties by
-    // precedence when match lengths are EQUAL; excluding '%' and '!' here
-    // means html_tag can never even start matching at those positions, so
-    // there's no risk of it out-competing the ASP rules on length.
-    html_tag: ($) => token(prec(-1, seq("<", /[^<>%!][^<>]*/, ">"))),
-
-    // HTML content (everything outside ASP tags/HTML tags).
-    // Tree-sitter's regex engine does not support look-around, so
-    // html_content matches runs of non-'<' characters, and a lone '<' that
-    // doesn't start any of the other explicit ASP/HTML rules falls through
-    // to html_lt below. The other rules are tried first by the GLR parser
-    // and win whenever they match, since html_content/html_lt use lower
-    // precedence.
-    html_content: ($) => token(prec(-1, repeat1(/[^<]/))),
-
-    // Fallback: a single '<' that isn't the start of any ASP/HTML construct.
-    html_lt: ($) => token(prec(-2, "<")),
+    // (Retained only as a comment for history; raw HTML is now handled by the
+    // single `html` node above so that complete <style>/<script> elements are
+    // visible to the HTML grammar's own CSS/JS injections.)
   },
 });
