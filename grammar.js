@@ -36,6 +36,7 @@ module.exports = grammar({
           $.asp_block,
           $.server_script_block,
           $.include_directive,
+          $.html_tag,
           $.html_content,
           $.html_lt,
         ),
@@ -99,8 +100,7 @@ module.exports = grammar({
 
     string: ($) => token(seq('"', /[^"]*/, '"')),
 
-    number: ($) =>
-      token(choice(/\d+(\.\d+)?/, /&H[0-9A-Fa-f]+/, /&O[0-7]+/)),
+    number: ($) => token(choice(/\d+(\.\d+)?/, /&H[0-9A-Fa-f]+/, /&O[0-7]+/)),
 
     // === VBScript language keywords / control-flow / statements ===
     keyword: ($) =>
@@ -123,7 +123,10 @@ module.exports = grammar({
     // === ASP built-in intrinsic objects ===
     type_builtin: ($) =>
       token(
-        prec(2, /Response|Request|Server|Session|Application|ObjectContext|ASPError/i),
+        prec(
+          2,
+          /Response|Request|Server|Session|Application|ObjectContext|ASPError/i,
+        ),
       ),
 
     // === ASP collections / common object properties ===
@@ -138,13 +141,7 @@ module.exports = grammar({
     // === Boolean / special literals / vbXxx runtime constants ===
     constant_builtin: ($) =>
       token(
-        prec(
-          2,
-          choice(
-            /True|False|Null|Nothing|Empty/i,
-            /vb[A-Z][a-zA-Z]*/,
-          ),
-        ),
+        prec(2, choice(/True|False|Null|Nothing|Empty/i, /vb[A-Z][a-zA-Z]*/)),
       ),
 
     identifier: ($) => token(/[a-zA-Z_][a-zA-Z0-9_]*/),
@@ -152,23 +149,49 @@ module.exports = grammar({
     operator: ($) =>
       token(
         choice(
-          "=", "<>", "<=", ">=", "<", ">",
-          "+", "-", "*", "/", "\\", "^", "&",
+          "=",
+          "<>",
+          "<=",
+          ">=",
+          "<",
+          ">",
+          "+",
+          "-",
+          "*",
+          "/",
+          "\\",
+          "^",
+          "&",
         ),
       ),
 
     punctuation: ($) => token(choice("(", ")", ",", ".", ":")),
 
-    // HTML content (everything outside ASP tags).
+    // A whole HTML tag, e.g. `<div class="x">`, `</div>`, `<input ... />`.
+    // Captured as ONE node (not just the leading '<') so it can be handed
+    // off wholesale to Zed's bundled HTML grammar via injections.scm.
+    //
+    // The character class after '<' deliberately excludes '%' and '!' so
+    // this rule never competes with `<%`/`<%=`/`<%@` (asp_block /
+    // asp_expression / asp_directive) or `<!--` (include_directive, and
+    // plain HTML comments, which still fall through to html_content /
+    // html_lt below — a known limitation, not specifically re-parsed as
+    // HTML comments for now). Tree-sitter's lexer only breaks ties by
+    // precedence when match lengths are EQUAL; excluding '%' and '!' here
+    // means html_tag can never even start matching at those positions, so
+    // there's no risk of it out-competing the ASP rules on length.
+    html_tag: ($) => token(prec(-1, seq("<", /[^<>%!][^<>]*/, ">"))),
+
+    // HTML content (everything outside ASP tags/HTML tags).
     // Tree-sitter's regex engine does not support look-around, so
     // html_content matches runs of non-'<' characters, and a lone '<' that
-    // doesn't start any of the other explicit ASP rules falls through to
-    // html_lt below. The other rules are tried first by the GLR parser and
-    // win whenever they match, since html_content/html_lt use lower
+    // doesn't start any of the other explicit ASP/HTML rules falls through
+    // to html_lt below. The other rules are tried first by the GLR parser
+    // and win whenever they match, since html_content/html_lt use lower
     // precedence.
     html_content: ($) => token(prec(-1, repeat1(/[^<]/))),
 
-    // Fallback: a single '<' that isn't the start of any ASP construct.
+    // Fallback: a single '<' that isn't the start of any ASP/HTML construct.
     html_lt: ($) => token(prec(-2, "<")),
   },
 });

@@ -228,6 +228,10 @@
           "named": true
         },
         {
+          "type": "html_tag",
+          "named": true
+        },
+        {
           "type": "include_directive",
           "named": true
         },
@@ -289,6 +293,10 @@
   },
   {
     "type": "html_lt",
+    "named": true
+  },
+  {
+    "type": "html_tag",
     "named": true
   },
   {

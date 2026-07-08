@@ -2,26 +2,28 @@
 ;
 ; Keywords / builtin functions / builtin objects / builtin properties /
 ; builtin constants each have their OWN token type in the grammar (see
-; grammar.js), matched with higher lexer precedence than the generic
-; `identifier` token. That means there's no query-ordering ambiguity here:
-; each node type maps 1:1 to exactly one capture.
+; grammar.js: `keyword`, `function_builtin`, `type_builtin`,
+; `property_builtin`, `constant_builtin`), matched with higher lexer
+; precedence than the generic `identifier` token. So this file just maps
+; each node type straight to a capture -- no #match? regex needed anymore.
 
 ; === ASP Delimiters ===
-(asp_directive) @tag
-(asp_expression) @_asp_expr
-(asp_block) @_asp_block
+"<%" @punctuation.special
+"%>" @punctuation.special
+"<%=" @punctuation.special
+"<%@" @punctuation.special
+
+; === Keywords / builtins (distinct node types from the grammar) ===
+(keyword) @keyword
+(function_builtin) @function
+(type_builtin) @type
+(property_builtin) @property
+(constant_builtin) @constant
 
 ; === Strings / Numbers / Comments ===
 (string) @string
 (number) @number
 (comment) @comment
-
-; === Keywords / builtins (now distinct node types, not identifier+regex) ===
-(keyword) @keyword
-(function_builtin) @function.builtin
-(type_builtin) @type.builtin
-(property_builtin) @property
-(constant_builtin) @constant.builtin
 
 ; === Operators / Punctuation ===
 (operator) @operator
@@ -29,12 +31,13 @@
 
 ; === #include directive ===
 (include_directive
-  "#include" @keyword.import
-  (string) @string.special)
+  "#include" @keyword
+  (string) @string)
 
 ; === Plain identifiers (variables, function/sub names, everything else) ===
 (identifier) @variable
 
-; === HTML content ===
+; === HTML (fallback in case the HTML injection doesn't apply for some reason) ===
+(html_tag) @tag
 (html_content) @none
 (html_lt) @none
