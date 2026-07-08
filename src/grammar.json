@@ -29,6 +29,14 @@
           },
           {
             "type": "SYMBOL",
+            "name": "doctype"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "style_block"
+          },
+          {
+            "type": "SYMBOL",
             "name": "html_tag"
           },
           {
@@ -138,6 +146,55 @@
           "type": "PATTERN",
           "value": "<\\/script>",
           "flags": "i"
+        }
+      ]
+    },
+    "style_block": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "PATTERN",
+            "value": "<style[^>]*>",
+            "flags": "i"
+          },
+          "named": true,
+          "value": "style_open_tag"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "ALIAS",
+              "content": {
+                "type": "TOKEN",
+                "content": {
+                  "type": "PREC",
+                  "value": 1,
+                  "content": {
+                    "type": "PATTERN",
+                    "value": "[^<]+"
+                  }
+                }
+              },
+              "named": true,
+              "value": "style_content"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "PATTERN",
+            "value": "<\\/style\\s*>",
+            "flags": "i"
+          },
+          "named": true,
+          "value": "style_close_tag"
         }
       ]
     },
@@ -467,6 +524,31 @@
             "value": ":"
           }
         ]
+      }
+    },
+    "doctype": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": -1,
+        "content": {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "PATTERN",
+              "value": "<!doctype",
+              "flags": "i"
+            },
+            {
+              "type": "PATTERN",
+              "value": "[^<>]*"
+            },
+            {
+              "type": "STRING",
+              "value": ">"
+            }
+          ]
+        }
       }
     },
     "html_tag": {

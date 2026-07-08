@@ -36,6 +36,8 @@ module.exports = grammar({
           $.asp_block,
           $.server_script_block,
           $.include_directive,
+          $.doctype,
+          $.style_block,
           $.html_tag,
           $.html_content,
           $.html_lt,
@@ -58,6 +60,17 @@ module.exports = grammar({
         /<script[^>]*runat\s*=\s*["']?server["']?[^>]*>/i,
         repeat($._code_token),
         /<\/script>/i,
+      ),
+
+    // <style>...</style> blocks. Captured as three pieces (open tag, raw
+    // CSS content, close tag) so injections.scm can re-parse just the
+    // middle piece as CSS, instead of it being swallowed as opaque
+    // html_content (which only gets re-parsed as HTML, not CSS).
+    style_block: ($) =>
+      seq(
+        alias(/<style[^>]*>/i, $.style_open_tag),
+        optional(alias(token(prec(1, /[^<]+/)), $.style_content)),
+        alias(/<\/style\s*>/i, $.style_close_tag),
       ),
 
     // #include directive (HTML comment syntax)
@@ -166,6 +179,11 @@ module.exports = grammar({
       ),
 
     punctuation: ($) => token(choice("(", ")", ",", ".", ":")),
+
+    // <!DOCTYPE html> and similar declarations. Handled as its own rule
+    // (rather than being swept up by html_tag, which deliberately excludes
+    // '!' to avoid colliding with <!--#include--> / HTML comments).
+    doctype: ($) => token(prec(-1, seq(/<!doctype/i, /[^<>]*/, ">"))),
 
     // A whole HTML tag, e.g. `<div class="x">`, `</div>`, `<input ... />`.
     // Captured as ONE node (not just the leading '<') so it can be handed
